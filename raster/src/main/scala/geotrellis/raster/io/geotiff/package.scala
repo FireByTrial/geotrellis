@@ -16,7 +16,6 @@
 
 package geotrellis.raster.io
 
-import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
 package object geotiff extends Implicits {
@@ -24,5 +23,4 @@ package object geotiff extends Implicits {
   val Deflate = DeflateCompression
 
   val GeoTiffReader = reader.GeoTiffReader
-  val TiffTagsReader = reader.TiffTagsReader
 }

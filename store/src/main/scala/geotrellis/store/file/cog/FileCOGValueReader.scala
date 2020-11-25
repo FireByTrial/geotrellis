@@ -23,7 +23,6 @@ import geotrellis.store._
 import geotrellis.store.cog._
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.store.index._
-import geotrellis.util._
 
 import _root_.io.circe._
 
@@ -34,9 +33,6 @@ class FileCOGValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String
 ) extends OverzoomingCOGValueReader {
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
-
   def reader[
     K: Decoder : SpatialComponent : ClassTag,
     V <: CellGrid[Int] : GeoTiffReader

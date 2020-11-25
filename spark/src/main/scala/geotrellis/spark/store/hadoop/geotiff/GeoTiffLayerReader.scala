@@ -19,7 +19,6 @@ package geotrellis.spark.store.hadoop.geotiff
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.{CellGrid, Raster, RasterExtent}
 import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
-import geotrellis.store.LayerId
 import geotrellis.layer.{SpatialKey, ZoomedLayoutScheme}
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
@@ -27,15 +26,14 @@ import geotrellis.raster.reproject.Reproject.{Options => ReprojectOptions}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
-import geotrellis.util.ByteReader
+import geotrellis.util.RangeReader
 import geotrellis.util.annotations.experimental
 import geotrellis.store.LayerId
+import geotrellis.store.compact.FS2Utils
 
 import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
-
-import java.net.URI
 
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
@@ -44,8 +42,6 @@ import scala.reflect.ClassTag
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
-  implicit def getByteReader(uri: URI): ByteReader
-
   val attributeStore: AttributeStore[M, GeoTiffMetadata]
   val layoutScheme: ZoomedLayoutScheme
   val resampleMethod: ResampleMethod
@@ -69,11 +65,11 @@ import scala.reflect.ClassTag
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator)
+      FS2Utils.fromIterator[IO](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator)
 
     val readRecord: GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]] = { md =>
       fs2.Stream eval IO.shift(ec) *> IO {
-        val tiff = GeoTiffReader[V].read(md.uri, streaming = true)
+        val tiff = GeoTiffReader[V].read(RangeReader(md.uri), streaming = true)
         val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
 
         // crop is unsafe, let's double check that we have a correct extent
@@ -109,11 +105,11 @@ import scala.reflect.ClassTag
         .layout
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name).toIterator)
+      FS2Utils.fromIterator[IO](attributeStore.query(layerId.name).toIterator)
 
     val readRecord: GeoTiffMetadata => fs2.Stream[IO, Raster[V]] = { md =>
       fs2.Stream eval IO.shift(ec) *> IO {
-        val tiff = GeoTiffReader[V].read(md.uri, streaming = true)
+        val tiff = GeoTiffReader[V].read(RangeReader(md.uri), streaming = true)
         tiff
           .crop(tiff.extent, layout.cellSize)
           .reproject(tiff.crs, layoutScheme.crs)

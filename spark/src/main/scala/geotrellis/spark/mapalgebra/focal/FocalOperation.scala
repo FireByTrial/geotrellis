@@ -22,7 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.buffer.BufferedTile
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.spark._
-import geotrellis.spark.buffer._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
@@ -57,7 +56,7 @@ object FocalOperation {
       apply(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner)(calc)
     }
 
-  private def applyOnRaster[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
+  private def applyOnRaster[K: SpatialComponent: ClassTag: GetComponent[*, SpatialKey]]
     (bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood, keyToExtent: SpatialKey => Extent)
     (calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): RDD[(K, Tile)] =
       bufferedTiles
@@ -69,7 +68,7 @@ object FocalOperation {
           }
         }, preservesPartitioning = true)
 
-  def applyOnRaster[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]](
+  def applyOnRaster[K: SpatialComponent: ClassTag: GetComponent[*, SpatialKey]](
     rdd: RDD[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds,
@@ -79,7 +78,7 @@ object FocalOperation {
       applyOnRaster(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
 
   def applyOnRaster[
-    K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]
+    K: SpatialComponent: ClassTag: GetComponent[*, SpatialKey]
   ](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner])
   (calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>

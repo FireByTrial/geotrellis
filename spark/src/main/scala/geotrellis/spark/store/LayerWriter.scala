@@ -24,7 +24,6 @@ import geotrellis.store.index._
 import geotrellis.spark._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
 import _root_.io.circe._
@@ -47,7 +46,7 @@ trait LayerWriter[ID] {
     H: Encoder: Decoder,
     K: AvroRecordCodec: Boundable: Encoder: ClassTag,
     V: AvroRecordCodec,
-    M: Component[?, Bounds[K]]: Semigroup: Encoder: Decoder
+    M: Component[*, Bounds[K]]: Semigroup: Encoder: Decoder
   ](id: LayerId, updateMetadata: M): Option[LayerAttributes[H, M, K]] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -92,7 +91,7 @@ trait LayerWriter[ID] {
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V = { (existing: V, updating: V) => updating }): Unit
 
   /** Update persisted layer without checking for possible.
@@ -117,20 +116,20 @@ trait LayerWriter[ID] {
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit
 
   // Layer Writing
   protected def _write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit
 
   def write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder:  Component[?, Bounds[K]]
+    M: Encoder:  Component[*, Bounds[K]]
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -142,7 +141,7 @@ trait LayerWriter[ID] {
   def write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -155,7 +154,7 @@ trait LayerWriter[ID] {
   def writer[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
     new Writer[ID, RDD[(K, V)] with Metadata[M]] {
       def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =
@@ -165,7 +164,7 @@ trait LayerWriter[ID] {
   def writer[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
     new Writer[ID, RDD[(K, V)] with Metadata[M]] {
       def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =
@@ -173,7 +172,7 @@ trait LayerWriter[ID] {
     }
 }
 
-object LayerWriter extends LazyLogging {
+object LayerWriter {
 
   /**
    * Produce LayerWriter instance based on URI description.

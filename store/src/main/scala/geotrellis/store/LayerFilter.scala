@@ -17,11 +17,7 @@
 package geotrellis.store
 
 import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
-import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.vector._
 import geotrellis.util._
 
@@ -72,9 +68,6 @@ object LayerFilter {
 
 
 object Intersects {
-  import geotrellis.raster.rasterize.{Rasterizer, Callback}
-  import collection.JavaConverters._
-  import java.util.concurrent.ConcurrentHashMap
 
   def apply[T](value: T) = LayerFilter.Value[Intersects.type, T](value)
 
@@ -115,7 +108,7 @@ object Intersects {
     }
 
   /** Define Intersects filter for Extent */
-  implicit def forExtent[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  implicit def forExtent[K: SpatialComponent: Boundable, M: GetComponent[*, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, Extent, M] {
     def apply(metadata: M, kb: KeyBounds[K], extent: Extent) = {
       val bounds = metadata.getComponent[LayoutDefinition].mapTransform(extent)
@@ -130,7 +123,7 @@ object Intersects {
   }
 
   /** Define Intersects filter for MultiPolygon */
-  implicit def forMultiPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  implicit def forMultiPolygon[K: SpatialComponent: Boundable, M: GetComponent[*, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
@@ -149,7 +142,7 @@ object Intersects {
     }
 
   /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[*, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, Polygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: Polygon) =
         forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon))
@@ -157,7 +150,7 @@ object Intersects {
 
   implicit def forProjectedPolygon[
     K: SpatialComponent: Boundable,
-    M: GetComponent[?, LayoutDefinition]: GetComponent[?, CRS]
+    M: GetComponent[*, LayoutDefinition]: GetComponent[*, CRS]
   ] =
     new LayerFilter[K, Intersects.type, (Polygon, CRS), M] {
       def apply(metadata: M, kb: KeyBounds[K], projectedPolygon: (Polygon, CRS)) = {
@@ -173,7 +166,7 @@ object Intersects {
 
   implicit def forProjectedMultiPolygon[
     K: SpatialComponent: Boundable,
-    M: GetComponent[?, LayoutDefinition]: GetComponent[?, CRS]
+    M: GetComponent[*, LayoutDefinition]: GetComponent[*, CRS]
   ] =
     new LayerFilter[K, Intersects.type, (MultiPolygon, CRS), M] {
       def apply(metadata: M, kb: KeyBounds[K], projectedMultiPolygon: (MultiPolygon, CRS)) = {
@@ -188,7 +181,7 @@ object Intersects {
     }
 
   /** Define Intersects filter for MultiLine */
-  implicit def forMultiLine[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  implicit def forMultiLine[K: SpatialComponent: Boundable, M: GetComponent[*, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, MultiLineString, M] {
       def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLineString) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
@@ -207,14 +200,14 @@ object Intersects {
     }
 
   /** Define Intersects filter for Polygon */
-  implicit def forLine[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  implicit def forLine[K: SpatialComponent: Boundable, M: GetComponent[*, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, LineString, M] {
       def apply(metadata: M, kb: KeyBounds[K], line: LineString) =
         forMultiLine[K, M].apply(metadata, kb, MultiLineString(line))
     }
 
   /** Define Contains filter for Point */
-  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
+  implicit def forPoint[K: SpatialComponent: Boundable, M: * => MapKeyTransform] =
     new LayerFilter[K, Intersects.type, Point, M] {
       def apply(metadata: M, kb: KeyBounds[K], point: Point) = Contains.pointContainment(metadata, kb, point)
     }
@@ -259,7 +252,7 @@ object Between {
 object Contains {
   def apply[T](value: T) = LayerFilter.Value[Contains.type, T](value)
 
-  private [store] def pointContainment[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)](metadata: M, kb: KeyBounds[K], point: Point) = {
+  private [store] def pointContainment[K: SpatialComponent: Boundable, M: * => MapKeyTransform](metadata: M, kb: KeyBounds[K], point: Point) = {
     val spatialKey = (metadata: MapKeyTransform)(point)
     val queryBounds =
       KeyBounds(
@@ -273,7 +266,7 @@ object Contains {
   }
 
   /** Define Intersects filter for Extent */
-  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
+  implicit def forPoint[K: SpatialComponent: Boundable, M: * => MapKeyTransform] =
     new LayerFilter[K, Contains.type, Point, M] {
       def apply(metadata: M, kb: KeyBounds[K], point: Point) = pointContainment(metadata, kb, point)
     }

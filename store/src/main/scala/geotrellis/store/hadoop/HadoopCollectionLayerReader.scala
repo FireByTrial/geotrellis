@@ -26,7 +26,6 @@ import geotrellis.util._
 import io.circe._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
@@ -41,14 +40,14 @@ class HadoopCollectionLayerReader(
   conf: Configuration,
   maxOpenFiles: Int = 16,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends CollectionLayerReader[LayerId] with LazyLogging {
+) extends CollectionLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

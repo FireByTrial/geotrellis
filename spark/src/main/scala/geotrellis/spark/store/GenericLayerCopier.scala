@@ -19,7 +19,6 @@ package geotrellis.spark.store
 import geotrellis.layer.{Boundable, Bounds}
 import geotrellis.store._
 import geotrellis.store.avro._
-import geotrellis.store.index.KeyIndex
 import geotrellis.util._
 
 import io.circe._
@@ -35,7 +34,7 @@ class GenericLayerCopier(
   def copy[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

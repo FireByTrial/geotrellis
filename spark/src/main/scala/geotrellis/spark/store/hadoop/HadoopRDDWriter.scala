@@ -24,12 +24,10 @@ import geotrellis.store.index._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.util._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.partition._
 import geotrellis.spark.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
@@ -40,7 +38,9 @@ import scala.reflect._
 import scala.collection.mutable
 
 
-object HadoopRDDWriter extends LazyLogging {
+object HadoopRDDWriter {
+  @transient private[this] lazy val logger = getLogger
+
   /** Index innterval at which map files should store an offset into sequence file.
     * This value is picked as a compromize between in-memory footprint and IO cost of retreiving a single record.
     */

@@ -24,8 +24,6 @@ import geotrellis.raster.resample._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.hadoop._
-import geotrellis.spark.store._
-import geotrellis.spark.util.KryoSerializer
 import geotrellis.util.MethodExtensions
 
 import org.apache.hadoop.conf.Configuration
@@ -86,7 +84,7 @@ trait Implicits {
     )(implicit sc: SparkContext): Reader[K, V] =
       new HadoopValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 
-    def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+    def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]](
       attributeStore: AttributeStore,
       layerId: LayerId,
       resampleMethod: ResampleMethod

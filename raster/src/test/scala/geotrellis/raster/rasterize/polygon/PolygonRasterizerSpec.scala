@@ -18,23 +18,18 @@ package geotrellis.raster.rasterize.polygon
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 
-import math.{max,min,round}
-
 import org.locationtech.jts.io.WKTReader
-import org.scalatest.FunSuite
 import scala.collection.mutable
 
+import org.scalatest.funsuite.AnyFunSuite
 
-class PolygonRasterizerSpec extends FunSuite
-    with RasterMatchers
-    with TileBuilders {
+class PolygonRasterizerSpec extends AnyFunSuite with RasterMatchers with TileBuilders {
 
   test("Polygon Rasterization") {
     val e = Extent(0.0, 0.0, 10.0, 10.0)
@@ -105,6 +100,20 @@ class PolygonRasterizerSpec extends FunSuite
     var sum = 0
     r.foreach(v => if (isData(v)) sum = sum + 1)
     assert(sum === 65536)
+  }
+
+  test("Should not fail because of a Double-related issue") {
+    val poly = Polygon(LineString(Seq[(Double, Double)](
+      (-156.7523879306299, 21.545279181475966),
+      (-156.75200324049055, 21.545438525349006),
+      (-156.75110930806937, 21.5432559342482),
+      (-156.7523879306299, 21.545279181475966)
+    )))
+    val re = RasterExtent(
+      Extent(-157.026672, 21.545119837602627, -156.75185966180015, 21.559142098430257),
+      CellSize(3.3310586448311594E-4, 6.37375492151282E-4)
+    )
+    Rasterizer.rasterizeWithValue(poly, re, 1)
   }
 
   test("polygon rasterization: more complex polygons") {

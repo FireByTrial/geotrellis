@@ -17,7 +17,6 @@
 package geotrellis.store
 
 import geotrellis.layer.{Bounds, Boundable}
-import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.util._
@@ -30,12 +29,12 @@ trait LayerReindexer[ID] {
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](id: ID, keyIndex: KeyIndex[K]): Unit
 
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](id: ID, keyIndexMethod: KeyIndexMethod[K]): Unit
 }

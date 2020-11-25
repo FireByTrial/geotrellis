@@ -25,7 +25,6 @@ import geotrellis.util._
 import io.circe._
 import scala.reflect.ClassTag
 
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
 import scala.reflect.ClassTag
@@ -37,7 +36,7 @@ class HadoopLayerCopier(
   def copy[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

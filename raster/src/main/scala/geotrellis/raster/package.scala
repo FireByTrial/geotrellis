@@ -184,6 +184,7 @@ package object raster extends Implicits {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
   }
 
+
   /* http://stackoverflow.com/questions/3508077/how-to-define-type-disjunction-union-types */
   sealed class TileOrMultibandTile[T]
   object TileOrMultibandTile {

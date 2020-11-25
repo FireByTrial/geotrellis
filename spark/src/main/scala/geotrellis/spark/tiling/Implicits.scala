@@ -16,7 +16,6 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.merge._
@@ -31,7 +30,7 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withTilerMethods[K, V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]](self: RDD[(K, V)])
+  implicit class withTilerMethods[K, V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]](self: RDD[(K, V)])
       extends TilerMethods[K, V](self)
 
   implicit class withTupleTilerKeyMethods[K: SpatialComponent](val self: (K, Extent)) extends TilerKeyMethods[(K, Extent), K] {

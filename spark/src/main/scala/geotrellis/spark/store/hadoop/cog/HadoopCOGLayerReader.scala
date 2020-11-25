@@ -24,15 +24,12 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.hadoop._
-import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
 import geotrellis.store.util.BlockingThreadPool
-import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import java.net.URI
@@ -48,15 +45,13 @@ import scala.reflect.ClassTag
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
 
   val defaultNumPartitions: Int = sc.defaultParallelism
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, hadoopConfiguration.value)
 
   def pathExists(path: String): Boolean =
     HdfsUtils.pathExists(new Path(path), hadoopConfiguration.value)

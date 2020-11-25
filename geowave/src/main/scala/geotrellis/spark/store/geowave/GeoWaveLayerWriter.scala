@@ -32,7 +32,7 @@ import geotrellis.util.annotations.experimental
 
 import _root_.io.circe._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
@@ -79,13 +79,14 @@ import resource._
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeoWaveLayerWriter extends LazyLogging {
+@experimental object GeoWaveLayerWriter {
+  @transient private[this] lazy val logger = getLogger
 
   /** $experimental */
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: Encoder: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[*, Bounds[K]]
   ](
     coverageName: String,
     bits: Int,
@@ -256,16 +257,14 @@ import resource._
 @experimental class GeoWaveLayerWriter(
   val attributeStore: GeoWaveAttributeStore,
   val accumuloWriter: AccumuloWriteStrategy
-)(implicit sc: SparkContext)
-    extends LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+)(implicit sc: SparkContext) {
+  @transient private[this] lazy val logger = getLogger
 
   /** $experimental */
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: Encoder: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[*, Bounds[K]]
   ](id: LayerId, layer: RDD[(K, V)] with Metadata[M], bits: Int = 0): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -278,7 +277,7 @@ import resource._
   @experimental protected def _write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: Encoder: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[*, Bounds[K]]
   ](
     layerId: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],

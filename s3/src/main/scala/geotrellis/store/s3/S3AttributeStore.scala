@@ -16,7 +16,6 @@
 
 package geotrellis.store.s3
 
-import geotrellis.layer._
 import geotrellis.store._
 
 import software.amazon.awssdk.core.sync.RequestBody
@@ -217,7 +216,7 @@ object S3AttributeStore {
   final val SEP = "__"
 
   def apply(bucket: String, root: String, s3Client: => S3Client = S3ClientProducer.get()) =
-    new S3AttributeStore(bucket, root, s3Client)
+    new S3AttributeStore(bucket, Option(root).getOrElse(""), s3Client)
 
   def apply(bucket: String, s3Client: => S3Client): S3AttributeStore =
     apply(bucket, "", s3Client)

@@ -17,7 +17,6 @@
 package geotrellis.spark.stitch
 
 import geotrellis.raster._
-import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.layer._
@@ -28,8 +27,8 @@ import geotrellis.util._
 import org.apache.spark.rdd.RDD
 
 abstract class SpatialTileLayoutRDDStitchMethods[
-  V <: CellGrid[Int]: Stitcher: ? => TilePrototypeMethods[V],
-  M: GetComponent[?, LayoutDefinition]
+  V <: CellGrid[Int]: Stitcher: * => TilePrototypeMethods[V],
+  M: GetComponent[*, LayoutDefinition]
 ] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {
@@ -57,7 +56,7 @@ abstract class SpatialTileLayoutRDDStitchMethods[
     val tiles = self.toCollection
     // From here down, this code duplicates SpatialTileLayoutCollectionStitchMethods.sparseStitch,
     // replacing self with tiles
-    if (tiles.headOption.isEmpty) {
+    if (tiles.isEmpty) {
       None
     } else {
       val tile = tiles.head._2

@@ -22,21 +22,19 @@ import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
 
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 object MapKeyTransform {
   def apply(crs: CRS, level: LayoutLevel): MapKeyTransform =
     apply(crs.worldExtent, level.layout.layoutCols, level.layout.layoutRows)
 
-  def apply(crs: CRS, layoutDimensions: (Int, Int)): MapKeyTransform =
+  def apply(crs: CRS, layoutDimensions: Dimensions[Int]): MapKeyTransform =
     apply(crs.worldExtent, layoutDimensions)
 
   def apply(crs: CRS, layoutCols: Int, layoutRows: Int): MapKeyTransform =
     apply(crs.worldExtent, layoutCols, layoutRows)
 
-  def apply(extent: Extent, layoutDimensions: (Int, Int)): MapKeyTransform =
+  def apply(extent: Extent, layoutDimensions: Dimensions[Int]): MapKeyTransform =
     apply(extent, layoutDimensions._1, layoutDimensions._2)
 
   def apply(extent: Extent, layoutCols: Int, layoutRows: Int): MapKeyTransform =

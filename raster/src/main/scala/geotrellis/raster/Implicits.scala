@@ -17,10 +17,8 @@
 package geotrellis.raster
 
 import geotrellis.vector.Point
-import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector._
-import geotrellis.util.MethodExtensions
-
+import geotrellis.util.{MethodExtensions, np}
 
 object Implicits extends Implicits
 
@@ -98,4 +96,34 @@ trait Implicits
           s"${t._1.dimensions} does not match ${t._2.dimensions}")
       }
   }
+
+  implicit class TilePercentileExtensions(tile: Tile) {
+    /**
+      * Compute percentile at the given breaks using the same algorithm as numpy
+      *
+      * https://docs.scipy.org/doc/numpy/reference/generated/numpy.percentile.html
+      * https://en.wikipedia.org/wiki/Percentile
+      *
+      * @param pctBreaks
+      * @return
+      */
+    def percentile(pctBreaks: Array[Double]): Array[Double] = {
+      np.percentile(tile.toArrayDouble.filter(isData(_)), pctBreaks)
+    }
+
+    /**
+      * Compute percentile at the given break using the same algorithm as numpy
+      *
+      * https://docs.scipy.org/doc/numpy/reference/generated/numpy.percentile.html
+      * https://en.wikipedia.org/wiki/Percentile
+      *
+      * @param pctBreak
+      * @return
+      */
+    def percentile(pctBreak: Double): Double = {
+      np.percentile(tile.toArrayDouble.filter(isData(_)), pctBreak)
+    }
+  }
+
+  implicit class withCellFeaturesMethods[R](val self: R) extends CellFeatures.Methods[R]
 }

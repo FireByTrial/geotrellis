@@ -17,7 +17,6 @@
 package geotrellis.store
 
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.util._
 
 /**
@@ -26,7 +25,7 @@ import geotrellis.util._
   * @tparam K  Type of key for the RDD being filtered
   * @tparam M  Type of metadata used for filtering
   */
-class LayerQuery[K: Boundable, M: GetComponent[?, Bounds[K]]](
+class LayerQuery[K: Boundable, M: GetComponent[*, Bounds[K]]](
   filterChain: ( (M, List[KeyBounds[K]]) ) => (M, List[KeyBounds[K]]) = { x: (M, List[KeyBounds[K]]) => x }) {
 
   /**

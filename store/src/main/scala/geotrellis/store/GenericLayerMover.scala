@@ -17,7 +17,6 @@
 package geotrellis.store
 
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.util._
 
@@ -29,7 +28,7 @@ class GenericLayerMover[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDel
   def move[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: ID, to: ID): Unit = {
     layerCopier.copy[K, V, M](from, to)
     layerDeleter.delete(from)

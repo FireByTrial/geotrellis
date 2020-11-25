@@ -18,11 +18,8 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.split._
-import geotrellis.vector.Extent
 
-import java.util.BitSet
 
 import spire.syntax.cfor._
 
@@ -317,9 +314,6 @@ abstract class GeoTiffTile(
    * @return A new [[Tile]] that contains the new CellTypes
    */
   def convert(newCellType: CellType): GeoTiffTile = {
-    if(newCellType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.warn(s"Conversion from $cellType to $newCellType may lead to data loss.")
-
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
 
@@ -619,7 +613,7 @@ abstract class GeoTiffTile(
           compressor.createDecompressor(),
           segmentLayout,
           compression,
-          cellType,
+          cellType.union(other.cellType),
           overviews = overviews
         )
       case _ =>
@@ -731,7 +725,7 @@ abstract class GeoTiffTile(
    */
   def crop(bounds: GridBounds[Int]): MutableArrayTile = {
     val iter = crop(List(bounds))
-    if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
+    if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${dimensions}")
     else iter.next._2
   }
 
@@ -809,4 +803,6 @@ abstract class GeoTiffTile(
    */
   def toBytes(): Array[Byte] =
     toArrayTile.toBytes
+
+  override def toString: String = s"GeoTiffTile($cols,$rows,$cellType)"
 }

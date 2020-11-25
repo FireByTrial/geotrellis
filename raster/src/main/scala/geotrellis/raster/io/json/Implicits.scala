@@ -16,8 +16,7 @@
 
 package geotrellis.raster.io.json
 
-import _root_.io.circe._
-import _root_.io.circe.generic.semiauto._
+import io.circe._
 import cats.syntax.either._
 
 import geotrellis.raster._
@@ -33,6 +32,4 @@ trait Implicits extends HistogramJsonFormats {
       Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "Expected CellType")
     }
 
-  implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
-  implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
 }

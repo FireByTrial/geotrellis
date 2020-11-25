@@ -17,9 +17,7 @@
 package geotrellis.spark.store.hbase
 
 import geotrellis.store.hbase._
-import geotrellis.spark._
 import geotrellis.spark.store.LayerWriter
-import geotrellis.spark.merge._
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
@@ -27,7 +25,7 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -38,13 +36,14 @@ class HBaseLayerWriter(
   val attributeStore: AttributeStore,
   instance: HBaseInstance,
   table: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   // Layer Updating
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -55,7 +54,7 @@ class HBaseLayerWriter(
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -67,7 +66,7 @@ class HBaseLayerWriter(
   private def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -90,7 +89,7 @@ class HBaseLayerWriter(
   protected def _write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

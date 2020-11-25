@@ -20,10 +20,8 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.util._
 
-import org.apache.avro._
 import _root_.io.circe._
 
 import java.time.ZonedDateTime
@@ -42,7 +40,7 @@ abstract class GenericLayerReindexer(
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -56,7 +54,7 @@ abstract class GenericLayerReindexer(
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)

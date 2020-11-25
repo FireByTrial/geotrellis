@@ -29,7 +29,7 @@ import geotrellis.util._
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.rdd.RDD
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import io.circe._
 import cats.Semigroup
 
@@ -53,7 +53,8 @@ class S3LayerWriter(
   putObjectModifier: PutObjectRequest => PutObjectRequest = identity,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   def rddWriter: S3RDDWriter = new S3RDDWriter(s3Client, executionContext)
 
@@ -61,7 +62,7 @@ class S3LayerWriter(
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -72,7 +73,7 @@ class S3LayerWriter(
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
     update(id, rdd, Some(mergeFunc))
   }
@@ -80,7 +81,7 @@ class S3LayerWriter(
   private def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -106,7 +107,7 @@ class S3LayerWriter(
   protected def _write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     require(!attributeStore.layerExists(id), s"$id already exists")
     implicit val sc = rdd.sparkContext

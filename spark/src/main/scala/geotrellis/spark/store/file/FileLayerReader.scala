@@ -25,7 +25,6 @@ import geotrellis.spark._
 import geotrellis.spark.store.FilteringLayerReader
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import io.circe._
 
@@ -42,14 +41,14 @@ import scala.reflect.ClassTag
 class FileLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String
-)(implicit sc: SparkContext) extends FilteringLayerReader[LayerId] with LazyLogging {
+)(implicit sc: SparkContext) extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

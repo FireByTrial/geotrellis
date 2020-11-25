@@ -18,10 +18,8 @@ package geotrellis.spark.mask
 
 import geotrellis.vector._
 import geotrellis.layer._
-import geotrellis.raster._
 import geotrellis.raster.mask._
 import geotrellis.layer.mask.Mask.Options
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
@@ -31,8 +29,8 @@ import scala.reflect.ClassTag
 
 abstract class TileRDDMaskMethods[
     K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: * => TileMaskMethods[V],
+    M: GetComponent[*, LayoutDefinition]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   /** Masks this raster by the given Polygon. */
   def mask(geom: Polygon): RDD[(K, V)] with Metadata[M] = mask(Seq(geom), Options.DEFAULT)

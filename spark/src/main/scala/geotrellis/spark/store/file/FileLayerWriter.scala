@@ -22,12 +22,10 @@ import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenera
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.spark.store._
-import geotrellis.spark.merge._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -50,13 +48,14 @@ import java.io.File
 class FileLayerWriter(
   val attributeStore: AttributeStore,
   catalogPath: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   // Layer Updating
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -67,7 +66,7 @@ class FileLayerWriter(
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -79,7 +78,7 @@ class FileLayerWriter(
   private def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -106,7 +105,7 @@ class FileLayerWriter(
   protected def _write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val catalogPathFile = new File(catalogPath)
 

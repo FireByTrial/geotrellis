@@ -20,7 +20,7 @@ import geotrellis.geomesa.geotools._
 import geotrellis.spark._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import geotrellis.store.LayerId
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -31,12 +31,10 @@ import org.opengis.feature.simple.SimpleFeatureType
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental class GeoMesaFeatureWriter(val instance: GeoMesaInstance)
-                                        (implicit sc: SparkContext) extends Serializable with LazyLogging {
-
-  logger.error("GeoMesa support is experimental")
+                                        (implicit sc: SparkContext) extends Serializable {
 
   /** $experimental */
-  @experimental def write[G <: Geometry, D: ? => Seq[(String, Any)]: λ[α => Feature[G, α] => FeatureToGeoMesaSimpleFeatureMethods[G, α]]]
+  @experimental def write[G <: Geometry, D: * => Seq[(String, Any)]: λ[α => Feature[G, α] => FeatureToGeoMesaSimpleFeatureMethods[G, α]]]
     (layerId: LayerId, simpleFeatureType: SimpleFeatureType, rdd: RDD[Feature[G, D]]): Unit = {
 
     val (sftTypeName, sftAttributeCount) = simpleFeatureType.getTypeName -> simpleFeatureType.getAttributeCount

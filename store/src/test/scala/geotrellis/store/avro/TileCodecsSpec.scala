@@ -17,12 +17,14 @@
 package geotrellis.store.avro
 
 import geotrellis.store.avro.codecs.TileCodecs
-import org.scalatest._
 import TileCodecs._
 import geotrellis.raster._
 import geotrellis.store.avro.AvroTools._
 
-class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TileCodecsSpec extends AnyFunSpec with Matchers with AvroTools  {
   describe("TileCodecs") {
     it("encodes ByteArrayTile"){
       roundTripWithNoDataCheck(ByteArrayTile.fill(127,10,15))
@@ -111,6 +113,23 @@ class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
       val tiles= for (i <- 0 to 3) yield DoubleArrayTile.fill(53232322.4,10,15, DoubleUserDefinedNoDataCellType(42.23))
       val thing = ArrayMultibandTile(tiles): MultibandTile
       roundTripWithNoDataCheck(thing)
+    }
+  }
+
+  describe("PaddedTileCodecs") {
+    it("encode PaddedTile") {
+      roundTrip(PaddedTile(ByteArrayTile.fill(127,10,15), 0, 0, 10, 15))
+    }
+
+    it("encode multiband PaddedTile"){
+      val tile = MultibandTile(
+        ByteArrayTile.fill(127,10,15),
+        ByteArrayTile.fill(100,10,15),
+        ByteArrayTile.fill(50,10,15)
+      )
+      val ptile = tile.mapBands((_, tile) => PaddedTile(tile, 0, 0, 10, 15))
+
+      roundTrip(ptile)
     }
   }
 }

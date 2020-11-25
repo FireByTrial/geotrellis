@@ -17,7 +17,6 @@
 package geotrellis.spark.filter
 
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util._
 import cats.Functor
 import org.apache.spark.rdd._
@@ -31,7 +30,7 @@ trait Implicits {
   implicit class withTileLayerRDDFilterMethods[
     K: Boundable,
     V,
-    M: Component[?, Bounds[K]]
+    M: Component[*, Bounds[K]]
   ](val self: RDD[(K, V)] with Metadata[M])
       extends TileLayerRDDFilterMethods[K, V, M]
 

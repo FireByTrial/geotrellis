@@ -26,7 +26,6 @@ import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
@@ -48,7 +47,7 @@ class S3LayerReader(
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId] with LazyLogging {
+  extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
@@ -57,7 +56,7 @@ class S3LayerReader(
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -76,7 +75,7 @@ class S3LayerReader(
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(3))
+    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
 
     new ContextRDD(rdd, layerMetadata)
   }

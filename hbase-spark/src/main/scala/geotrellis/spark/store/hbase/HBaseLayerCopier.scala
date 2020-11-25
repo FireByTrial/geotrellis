@@ -20,8 +20,6 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.hbase._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
@@ -37,7 +35,7 @@ class HBaseLayerCopier(
   def copy[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

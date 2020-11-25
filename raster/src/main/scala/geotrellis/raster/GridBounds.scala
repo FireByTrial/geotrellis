@@ -17,12 +17,9 @@
 package geotrellis.raster
 
 import _root_.io.circe._
-import _root_.io.circe.syntax._
 import _root_.io.circe.generic.semiauto._
-import cats.syntax.either._
 
 import scala.collection.mutable
-import spire.syntax.cfor._
 import spire.math._
 import spire.implicits._
 
@@ -196,6 +193,32 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
       )
     }
 
+  /** Returns true if the present grid intersects a rastser of given dimensions.
+    * The raster is treated as if its upper-left corner is at cell (0, 0) relative to this grid.
+    * @param  dimensions  The dimensions of a raster
+    */
+  def intersects(dimensions: Dimensions[N]): Boolean =
+    !(colMax < 0 || (dimensions.cols-1) < colMin) &&
+    !(rowMax < 0 || (dimensions.rows-1) < rowMin)
+
+  /** Return the intersection of the present grid and a raster of given dimensions.
+    * The raster is treated as if its upper-left corner is at cell (0, 0) relative to this grid.
+    * @param  dimensions  The dimensions of a raster
+    */
+  def intersection(dimensions: Dimensions[N]): Option[GridBounds[N]] =
+    if(!intersects(dimensions)) {
+      None
+    } else {
+      Some(
+        GridBounds(
+          colMin max 0,
+          rowMin max 0,
+          colMax min (dimensions.cols-1),
+          rowMax min (dimensions.rows-1))
+      )
+    }
+
+
   /** Return the union of GridBounds. */
   def combine(other: GridBounds[N]): GridBounds[N] =
     GridBounds(
@@ -256,6 +279,9 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
 
     def apply(colMin: Long, rowMin: Long, colMax: Long, rowMax: Long): GridBounds[Long] =
       new GridBounds[Long](colMin, rowMin, colMax, rowMax)
+
+    def apply[N: Integral](dimensions: Dimensions[N]): GridBounds[N] =
+      new GridBounds[N](0, 0, dimensions.cols - 1, dimensions.rows - 1)
 
     /**
       * Creates a sequence of distinct [[GridBounds]] out of a set of

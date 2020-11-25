@@ -18,7 +18,6 @@ package geotrellis.store.hbase
 
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.hbase._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
@@ -68,7 +67,7 @@ object HBaseValueReader {
   ): Reader[K, V] =
     new HBaseValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]](
     instance: HBaseInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

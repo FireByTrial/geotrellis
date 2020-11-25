@@ -24,14 +24,11 @@ import geotrellis.store.util._
 import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
-import geotrellis.store.s3.cog._
 import geotrellis.spark.store.cog._
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
-import com.typesafe.scalalogging.LazyLogging
 import io.circe._
 
 import scala.concurrent.ExecutionContext
@@ -47,13 +44,10 @@ class S3COGLayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
-
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val defaultNumPartitions: Int = sc.defaultParallelism
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
   def pathExists(path: String): Boolean = s3Client.objectExists(path)
 

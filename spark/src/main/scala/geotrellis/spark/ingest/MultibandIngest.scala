@@ -24,7 +24,6 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
-import geotrellis.spark.reproject._
 import geotrellis.vector._
 import geotrellis.util._
 
@@ -34,7 +33,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object MultibandIngest {
-  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: Component[?, ProjectedExtent], K: SpatialComponent: Boundable: ClassTag](
+  def apply[T: ClassTag: * => TilerKeyMethods[T, K]: Component[*, ProjectedExtent], K: SpatialComponent: Boundable: ClassTag](
     sourceTiles: RDD[(T, MultibandTile)],
     destCRS: CRS,
     layoutScheme: LayoutScheme,

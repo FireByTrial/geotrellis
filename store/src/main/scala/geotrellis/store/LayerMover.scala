@@ -17,7 +17,6 @@
 package geotrellis.store
 
 import geotrellis.layer.{Bounds, Boundable}
-import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util._
 
@@ -29,6 +28,6 @@ trait LayerMover[ID] {
   def move[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: ID, to: ID): Unit
 }

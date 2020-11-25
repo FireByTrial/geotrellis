@@ -23,10 +23,9 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.cassandra._
 import geotrellis.store.index._
 import geotrellis.spark.store._
-import geotrellis.spark.merge._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -38,13 +37,14 @@ class CassandraLayerWriter(
   instance: CassandraInstance,
   keyspace: String,
   table: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   // Layer updating
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -55,7 +55,7 @@ class CassandraLayerWriter(
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -67,7 +67,7 @@ class CassandraLayerWriter(
   private def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
+    M: Encoder: Decoder: Component[*, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -92,7 +92,7 @@ class CassandraLayerWriter(
   protected def _write[
     K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Component[?, Bounds[K]]
+    M: Encoder: Component[*, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

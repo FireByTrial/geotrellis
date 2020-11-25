@@ -23,9 +23,7 @@ import geotrellis.store._
 import geotrellis.store.util._
 import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
-import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe._
 
 import scala.concurrent.ExecutionContext
@@ -42,9 +40,7 @@ class FileCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends COGCollectionLayerReader[LayerId] with LazyLogging {
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
+) extends COGCollectionLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 

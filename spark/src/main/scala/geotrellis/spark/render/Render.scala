@@ -21,7 +21,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.render._
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util._
 import org.apache.spark.rdd.RDD
 
@@ -66,7 +65,7 @@ object Render {
     * @param  rdd   The RDD of spatial tiles to render.
     */
   def renderGeoTiff[
-    M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(SpatialKey, Tile)] with Metadata[M]): RDD[(SpatialKey, SinglebandGeoTiff)] =
     rdd.mapPartitions({ partition =>
       val transform = rdd.metadata.getComponent[LayoutDefinition].mapTransform
@@ -82,7 +81,7 @@ object Render {
     * @param  rdd   The RDD of spatial multiband tiles to render.
     */
   def renderGeoTiff[
-    M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[M])(implicit d: DummyImplicit): RDD[(SpatialKey, MultibandGeoTiff)] =
     rdd.mapPartitions({ partition =>
       val transform = rdd.metadata.getComponent[LayoutDefinition].mapTransform

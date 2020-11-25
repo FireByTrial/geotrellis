@@ -23,11 +23,8 @@ import geotrellis.store._
 import geotrellis.store.util._
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.store.file.cog.byteReader
 import geotrellis.spark.store.cog._
-import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import _root_.io.circe._
 
@@ -46,13 +43,11 @@ class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val defaultNumPartitions: Int = sc.defaultParallelism
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def pathExists(path: String): Boolean =
     new File(path).isFile
