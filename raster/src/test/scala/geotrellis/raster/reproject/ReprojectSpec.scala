@@ -164,15 +164,8 @@ class ReprojectSpec extends AnyFunSpec
       val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = wmLeft.rasterExtent
       val RasterExtent(_, cellwidthRight, cellheightRight, _, _) = wmRight.rasterExtent
 
-      /**
-       *  A previous version of this test was bugged and used a stricter tolerance value of 0.05.
-       *  The increased tolerance here does not indicate a decrease in precision: the same code path
-       *  is being used to generate expected cellsizes, it just no longer receives incorrect target
-       *  RasterExtents in certain degenerate cases.
-       *  For more details about this fix, see https://github.com/locationtech/geotrellis/pull/3095
-       */
-      cellwidthLeft should be (cellwidthRight +- 0.08)
-      cellheightLeft should be (cellheightRight +- 0.08)
+      cellwidthLeft should be (cellwidthRight +- 0.01)
+      cellheightLeft should be (cellheightRight +- 0.01)
 
       // Specifically fit it ito a web mercator zoom layout tile
       val re = RasterExtent(Extent(-8247861.100, 4872401.931, -8238077.160, 4882185.871), 256, 256)
